@@ -1,11 +1,12 @@
-import { SESSION_STORAGE_KEY } from '@/constants'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import ky from 'ky'
 import { useEffect, useMemo } from 'react'
 import { Link, useLocation, useNavigationType } from 'react-router-dom'
-import { useSessionStorage, useSet } from 'react-use'
+import { useSet } from 'react-use'
 
 const PAGE_SIZE = 20
+
+let selectedPokemonInMemory: string[]
 
 const SearchPage = () => {
   const navigationType = useNavigationType()
@@ -13,15 +14,15 @@ const SearchPage = () => {
 
   const shouldRestoreState = navigationType === 'POP' || state?.backLinkPressed
 
-  const [storage, setStorage] = useSessionStorage<string[]>(SESSION_STORAGE_KEY)
-
   const [selectedPokemon, { toggle: toggleSelectedPokemon }] = useSet<string>(
-    shouldRestoreState && storage ? new Set(storage) : undefined
+    shouldRestoreState && selectedPokemonInMemory
+      ? new Set(selectedPokemonInMemory)
+      : undefined
   )
 
   useEffect(() => {
-    setStorage(Array.from(selectedPokemon))
-  }, [selectedPokemon, setStorage])
+    selectedPokemonInMemory = Array.from(selectedPokemon)
+  }, [selectedPokemon])
 
   const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
     queryKey: ['search'],
@@ -56,7 +57,7 @@ const SearchPage = () => {
           {pokemonList?.map((pokemon) => (
             <div
               key={pokemon.name}
-              className="card bg-neutral text-neutral-content"
+              className="card bg-base-100 shadow-xl"
             >
               <div className="card-body">
                 <div className="flex items-center gap-2">
